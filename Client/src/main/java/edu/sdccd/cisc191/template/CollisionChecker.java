@@ -1,5 +1,6 @@
 package edu.sdccd.cisc191.template;
 
+import edu.sdccd.cisc191.template.OBJS.SuperObject;
 import edu.sdccd.cisc191.template.entity.Entity;
 
 /**
@@ -27,127 +28,144 @@ public class CollisionChecker {
      * @param entity The entity whose collision is being checked.
      */
     public void checkTile(Entity entity) {
+        int entityLeftCol = (entity.worldX + entity.solidArea.x) / gp.tileSize;
+        int entityRightCol = (entity.worldX + entity.solidArea.x + entity.solidArea.width) / gp.tileSize;
+        int entityTopRow = (entity.worldY + entity.solidArea.y) / gp.tileSize;
+        int entityBottomRow = (entity.worldY + entity.solidArea.y + entity.solidArea.height) / gp.tileSize;
 
-        int entityLeftWorldX = entity.worldX + entity.solidArea.x;
-        int entityRightWorldX = entity.worldX + entity.solidArea.x + entity.solidArea.width;
-        int entityTopWorldY = entity.worldY + entity.solidArea.y;
-        int entityBottomWorldY = entity.worldY + entity.solidArea.y + entity.solidArea.height;
-
-        int entityLeftCol = entityLeftWorldX/gp.tileSize;
-        int entityRightCol = entityRightWorldX/gp.tileSize;
-        int entityTopRow = entityTopWorldY/gp.tileSize;
-        int entityBottomRow = entityTopWorldY/gp.tileSize;
-
-        int tileNum1, tileNum2;
-
-        //Module 2
         // Switch based on the entity's direction to check for collisions
-        switch(entity.direction){
+        switch (entity.direction) {
             case "up":
-                entityTopRow = (entityTopWorldY - entity.speed)/gp.tileSize;
-                tileNum1 = gp.tileManager.mapTileNum[entityLeftCol][entityTopRow];
-                tileNum2 = gp.tileManager.mapTileNum[entityRightCol][entityTopRow];
-                if((gp.tileManager.tile[tileNum1].collision == true || gp.tileManager.tile[tileNum2].collision) == true){
-                entity.collisionOn = true;
-                }
+                checkTileCollision(entity, entityLeftCol, entityRightCol, entityTopRow - entity.speed / gp.tileSize);
                 break;
             case "down":
-                entityBottomRow = (entityBottomWorldY + entity.speed)/gp.tileSize;
-                tileNum1 = gp.tileManager.mapTileNum[entityLeftCol][entityBottomRow];
-                tileNum2 = gp.tileManager.mapTileNum[entityRightCol][entityBottomRow];
-                if((gp.tileManager.tile[tileNum1].collision == true || gp.tileManager.tile[tileNum2].collision) == true){
-                    entity.collisionOn = true;
-                }
+                checkTileCollision(entity, entityLeftCol, entityRightCol, entityBottomRow + entity.speed / gp.tileSize);
                 break;
             case "left":
-                entityLeftCol = (entityLeftWorldX - entity.speed)/gp.tileSize;
-                tileNum1 = gp.tileManager.mapTileNum[entityLeftCol][entityTopRow];
-                tileNum2 = gp.tileManager.mapTileNum[entityLeftCol][entityBottomRow];
-                if((gp.tileManager.tile[tileNum1].collision == true || gp.tileManager.tile[tileNum2].collision) == true){
-                    entity.collisionOn = true;
-                }
+                checkTileCollision(entity, entityLeftCol - entity.speed / gp.tileSize, entityLeftCol,
+                        entityTopRow);
                 break;
             case "right":
-                entityRightCol = (entityRightWorldX + entity.speed)/gp.tileSize;
-                tileNum1 = gp.tileManager.mapTileNum[entityRightCol][entityTopRow];
-                tileNum2 = gp.tileManager.mapTileNum[entityRightCol][entityTopRow];
-                if((gp.tileManager.tile[tileNum1].collision == true || gp.tileManager.tile[tileNum2].collision) == true){
-                    entity.collisionOn = true;
-                }
+                checkTileCollision(entity, entityRightCol + entity.speed / gp.tileSize, entityRightCol,
+                        entityTopRow);
                 break;
         }
-
     }
 
     /**
-     * Checks for collisions between the entity and game objects.
+     * Checks for collisions with tiles based on the given row and columns.
      *
-     * @param entity The entity to check collisions for.
-     * @param player True if the entity is the player, false otherwise.
-     * @return The index of the object the entity collided with, or 999 if no collision.
+     * @param entity    The entity being checked for collisions.
+     * @param leftCol   The left column of the entity.
+     * @param rightCol  The right column of the entity.
+     * @param targetRow The target row for collision checking.
      */
-    public int checkObject(Entity entity, boolean player) {
+    private void checkTileCollision(Entity entity, int leftCol, int rightCol, int targetRow)
+    {
+        int tileNum1 = gp.tileManager.mapTileNum[leftCol][targetRow];
+        int tileNum2 = gp.tileManager.mapTileNum[rightCol][targetRow];
+
+        if (gp.tileManager.tile[tileNum1].collision || gp.tileManager.tile[tileNum2].collision)
+        {
+            entity.collisionOn = true;
+        }
+    }
+
+
+    /**
+     * Checks player and object collisions
+     * @param entity object in the world
+     * @param player boolean
+     * @return the index of the collision
+     */
+    public int checkObject(Entity entity, boolean player)
+    {
         int index = 999;
-        for(int i=0; i < gp.obj.length; i++) {
-            if(gp.obj[i] != null) {
-                //Get entity's solid area
+        for (int i = 0; i < gp.obj.length; i++)
+        {
+            if (gp.obj[i] != null)
+            {
+                // Get entity's solid area
                 entity.solidArea.x = entity.worldX + entity.solidArea.x;
                 entity.solidArea.y = entity.worldY + entity.solidArea.y;
 
-                //Get the solid area object
+                // Get the solid area object
                 gp.obj[i].solidArea.x = gp.obj[i].worldX + gp.obj[i].solidArea.x;
                 gp.obj[i].solidArea.y = gp.obj[i].worldY + gp.obj[i].solidArea.y;
 
-                switch(entity.direction){
-                    case "up":
-                        entity.solidArea.y -= entity.speed;
-                        if(entity.solidArea.intersects(gp.obj[i].solidArea)){
-                            if(gp.obj[i].collision == true){
-                            entity.collisionOn = true;}
-                            if(player == true){
-                                index = i;
-                            }
-                        }
-                        break;
-                    case "down":
-                        entity.solidArea.y += entity.speed;
-                        if(entity.solidArea.intersects(gp.obj[i].solidArea)){
-                            if(gp.obj[i].collision == true){
-                                entity.collisionOn = true;}
-                            if(player == true){
-                                index = i;
-                            }
-                        }
-                        break;
-                    case "left":
-                        entity.solidArea.x -= entity.speed;
-                        if(entity.solidArea.intersects(gp.obj[i].solidArea)){
-                            if(gp.obj[i].collision == true){
-                                entity.collisionOn = true;}
-                            if(player == true){
-                                index = i;
-                            }
-                        }
-                        break;
-                    case "right":
-                        entity.solidArea.x += entity.speed;
-                        if(entity.solidArea.intersects(gp.obj[i].solidArea)){
-                            if(gp.obj[i].collision == true){
-                                entity.collisionOn = true;}
-                            if(player == true){
-                                index = i;
-                            }
-                        }
-                        break;
+                // Check for collision
+                if (checkObjCollision(entity, gp.obj[i]))
+                {
+                    if (gp.obj[i].collision)
+                    {
+                        entity.collisionOn = true;
+                    }
+                    if (player) {
+                        index = i;
+                    }
                 }
-                entity.solidArea.x = entity.solidAreaDefaultX;
-                entity.solidArea.y = entity.solidAreaDefaultY;
-                gp.obj[i].solidArea.x = gp.obj[i].solidAreaDefaultX;
-                gp.obj[i].solidArea.y = gp.obj[i].solidAreaDefaultY;
 
+                // Reset solid areas
+                resetSolidAreas(entity, gp.obj[i]);
             }
-
         }
         return index;
+    }
+
+    /**
+     * Checks the collisions based on the direction of movement
+     * @param entity object in the world
+     * @param obj the SuperObject of entities int the world
+     * @return a boolean if objects are colliding.
+     */
+    private boolean checkObjCollision(Entity entity, SuperObject obj)
+    {
+        switch (entity.direction)
+        {
+            case "up":
+                entity.solidArea.y -= entity.speed;
+                break;
+            case "down":
+                entity.solidArea.y += entity.speed;
+                break;
+            case "left":
+                entity.solidArea.x -= entity.speed;
+                break;
+            case "right":
+                entity.solidArea.x += entity.speed;
+                break;
+        }
+        boolean isColliding = entity.solidArea.intersects(obj.solidArea);
+
+        // Reset position after check
+        switch (entity.direction)
+        {
+            case "up":
+                entity.solidArea.y += entity.speed;
+                break;
+            case "down":
+                entity.solidArea.y -= entity.speed;
+                break;
+            case "left":
+                entity.solidArea.x += entity.speed;
+                break;
+            case "right":
+                entity.solidArea.x -= entity.speed;
+                break;
+        }
+        return isColliding;
+    }
+
+    /**
+     * Resets the solid areas of both the specified entity and super object to their default positions.
+     * @param entity the entity whose solid area needs to be reset
+     * @param obj the super object whose solid area needs to be reset
+     */
+    private void resetSolidAreas(Entity entity, SuperObject obj)
+    {
+        entity.solidArea.x = entity.solidAreaDefaultX;
+        entity.solidArea.y = entity.solidAreaDefaultY;
+        obj.solidArea.x = obj.solidAreaDefaultX;
+        obj.solidArea.y = obj.solidAreaDefaultY;
     }
 }
