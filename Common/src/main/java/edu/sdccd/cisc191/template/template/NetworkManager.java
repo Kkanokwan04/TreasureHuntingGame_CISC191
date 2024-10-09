@@ -44,7 +44,7 @@ public class NetworkManager {
      * Periodically sends the total playtime to the server. The data is sent only if
      * the specified send interval (in milliseconds) has passed since the last time the data was sent.
      */
-    public void updateGameState() {
+    public void updateServerTimeState() {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastTimeSent >= sendInterval) {
             String playTimeString = "Total time in the Game: " + timeManager.getFormattedPlayTime();
@@ -57,7 +57,8 @@ public class NetworkManager {
      * Checks whether the game is completed. This method can be extended to send final playtime
      * or perform any necessary actions upon game completion.
      */
-    public void checkGameCompletion() {
+    public void checkGameCompletion()
+    {
 
     }
 }

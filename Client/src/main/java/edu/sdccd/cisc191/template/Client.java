@@ -1,5 +1,7 @@
 package edu.sdccd.cisc191.template;
 
+import edu.sdccd.cisc191.template.template.NetworkManager;
+
 import javax.swing.*;
 
 /**
@@ -35,5 +37,4 @@ public class Client {
         gamePanel.setupGame(); // Set up initial game objects and configuration
         gamePanel.startGameThread(); // Start the game loop thread
     }
-
 }
