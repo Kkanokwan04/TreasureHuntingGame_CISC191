@@ -9,6 +9,8 @@ import java.net.*;
  */
 public class GameServer extends Thread {
 
+    private static final int PORT = 1331; // Change: Constant for server port
+    private static final int BUFFER_SIZE = 1024; // Change: Constant for the size of the buffer
     private DatagramSocket socket;
 
     /**
@@ -17,7 +19,7 @@ public class GameServer extends Thread {
      */
     public GameServer() {
         try {
-            this.socket = new DatagramSocket(1331);
+            this.socket = new DatagramSocket(PORT);
             System.out.println("Server started on: " + socket.getLocalPort());
         } catch (SocketException e) {
             e.printStackTrace();
@@ -31,16 +33,14 @@ public class GameServer extends Thread {
      */
     public void run() {
         while (true) {
-            byte[] data = new byte[1024];
+            byte[] data = new byte[BUFFER_SIZE]; // Changed to BUFFER_SIZE from 1024
             DatagramPacket packet = new DatagramPacket(data, data.length);
             try {
                 socket.receive(packet);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            String message = new String(packet.getData()).trim();
-
-
+            String message = new String(packet.getData(), 0 , packet.getLength()).trim(); // Added 0 and packet.getLength()
             InetAddress clientAddress = packet.getAddress();
             int clientPort = packet.getPort();
 
